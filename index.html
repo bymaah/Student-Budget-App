@@ -402,8 +402,8 @@
             <div>
               <label>Barcode Scan</label>
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button class="btn secondary" id="startScanBtn" type="button">Start Scan</button>
-                <button class="btn secondary" id="stopScanBtn" type="button">Stop Scan</button>
+                <button class="btn secondary" id="generateCodeBtn" type="button">Generate Code (Demo)</button>
+                <button class="btn secondary" id="clearCodeBtn" type="button">Clear Code</button>
               </div>
             </div>
           </div>
@@ -629,8 +629,8 @@
     const BALANCE_KEY = "student_budget_balance";
     const LOGIN_KEY = "budget_app_logged_in_v1";
 
-    const SUPABASE_URL = "https://ckwkxetqlvwzhsjlrrph.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrd2t4ZXRxbHZ3emhzamxycnBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyMTIzNjgsImV4cCI6MjA5MTc4ODM2OH0.fj-fUFwSPv4DTPkoB7NmATsnfpFBiHX9VGpqSgrCNKA";
+    const SUPABASE_URL = "https://jscrsjjibdmrjnfywulc.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_71FsdWR7MSHNTAl3OvVnHw_I8RRQube";
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -773,7 +773,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(setup));
       localStorage.setItem(BALANCE_KEY, String(state.balance));
       state.meta.lastSaved = Date.now();
-      setSaveStatus("Saved ✅");
+      setSaveStatus("Saved âœ…");
     }
 
     async function loadTransactionsFromSupabase(){
@@ -1003,10 +1003,10 @@
 
       $("summaryLine").textContent =
         "This week: Capital equivalent " + money(weeklyCapital) +
-        " • Spent " + money(spent) +
-        " • Fixed " + money(fixed) +
-        " • Saved " + money(saved) +
-        " • Remaining after weekly activity " + money(remaining) + ".";
+        " â€¢ Spent " + money(spent) +
+        " â€¢ Fixed " + money(fixed) +
+        " â€¢ Saved " + money(saved) +
+        " â€¢ Remaining after weekly activity " + money(remaining) + ".";
     }
 
     function renderWeeklyBreakdown(){
@@ -1023,7 +1023,7 @@
       });
 
       const sorted = Object.entries(byCategory).sort((a,b) => b[1] - a[1]);
-      const text = sorted.map(([cat, total]) => cat + ": " + money(total)).join(" • ");
+      const text = sorted.map(([cat, total]) => cat + ": " + money(total)).join(" â€¢ ");
       $("weeklyBreakdownText").textContent = "This week you have been spending on: " + text + ".";
     }
 
@@ -1164,7 +1164,7 @@
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(setup));
       localStorage.setItem(BALANCE_KEY, String(state.balance));
-      setSaveStatus("Saved ✅");
+      setSaveStatus("Saved âœ…");
       render();
     }
 
@@ -1224,7 +1224,7 @@
       $("txnDate").value = todayString();
       $("statementDate").value = currentMonthString();
       clearQuickAmount();
-      setSaveStatus("Reset ✅");
+      setSaveStatus("Reset âœ…");
       render();
       renderStatement();
     }
@@ -1402,6 +1402,28 @@
         (type === "monthly" ? "monthly" : "weekly") +
         " income, expenses, and savings in one place, similar to a simplified bank statement.";
     }
+    // ===== DEMO BARCODE (ADD THIS) =====
+const fakeProducts = {
+  "9300675071668": { category: "Groceries", note: "Milk" },
+  "1234567890123": { category: "Groceries", note: "Bread" },
+  "7894561230001": { category: "Transport", note: "Train ticket" },
+  "1112223334445": { category: "Food", note: "Coffee" },
+  "5556667778889": { category: "Personal", note: "Shampoo" }
+};
+
+function generateFakeBarcode(){
+  const codes = Object.keys(fakeProducts);
+  return codes[Math.floor(Math.random() * codes.length)];
+}
+
+function applyProductCode(code){
+  const product = fakeProducts[code];
+  if(product){
+    $("txnCategory").value = product.category;
+    $("txnNote").value = product.note;
+  }
+}
+// ===== END DEMO BARCODE =====
 
     async function init() {
       initLogin();
@@ -1464,10 +1486,27 @@
       $("clearTxnsBtn").addEventListener("click", clearTransactions);
       $("resetBtn").addEventListener("click", resetAll);
 
-      $("startScanBtn").addEventListener("click", startBarcodeScanner);
-      $("stopScanBtn").addEventListener("click", stopBarcodeScanner);
+      if ($("startScanBtn")) {
+  $("startScanBtn").addEventListener("click", startBarcodeScanner);
+}
 
+if ($("stopScanBtn")) {
+  $("stopScanBtn").addEventListener("click", stopBarcodeScanner);
+}
       $("generateStatementBtn").addEventListener("click", renderStatement);
+      $("generateCodeBtn").addEventListener("click", () => {
+  const code = generateFakeBarcode();
+  $("txnCode").value = code;
+  applyProductCode(code);
+});
+
+$("clearCodeBtn").addEventListener("click", () => {
+  $("txnCode").value = "";
+});
+
+$("txnCode").addEventListener("change", () => {
+  applyProductCode($("txnCode").value);
+});
       $("statementType").addEventListener("change", renderStatement);
       $("statementDate").addEventListener("change", renderStatement);
 
